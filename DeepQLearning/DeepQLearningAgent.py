@@ -1,5 +1,3 @@
-#fullExample
-
 import sys
 import gym
 import pylab
@@ -116,10 +114,7 @@ class DQNAgent:
 
 
 if __name__ == "__main__":
-    # In case of CartPole-v1, maximum length of episode is 500
-  
-    #env = gym.make('MountainCar-v0')
-    #env = gym.make('Pendulum-v0')
+    
   # get size of state and action from environment
   env = armEnv()
   env = env.make()
