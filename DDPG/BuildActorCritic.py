@@ -45,3 +45,18 @@ def buildCriticNetwork(self,state_size,action_size):
   return model,action,state
   
   
+#Create the target network
+def target_train(self):
+  actor_weights = self.model.get_weights()
+  actor_target_weights = self.target_model.get_weights()
+  for i in xrange(len(actor_weights)):
+    actor_target_weights[i] = self.TAU*actor_weights[i] + (1 - self.TAU)*actor_target_weights[i]
+  self.target_model.set_weights(actor_target_weights)
+  
+  
+
+
+
+
+
+  

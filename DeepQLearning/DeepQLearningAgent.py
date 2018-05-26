@@ -27,9 +27,9 @@ class DQNAgent:
         self.action_size = action_size
 
         # These are hyper parameters for the DQN
-        self.discount_factor = 0.9# was .99
+        self.discount_factor = 0.95# was .99
         self.learning_rate = 0.002#was .001
-        self.epsilon = 1#was 1.0
+        self.epsilon = 1.0#was 1.0
         self.epsilon_decay = 0.999#was .999
         self.epsilon_min = 0.01#was .01
         self.batch_size = 100
@@ -51,7 +51,7 @@ class DQNAgent:
     # state is input and Q Value of each action is output of network
     def build_model(self):
         model = Sequential()
-        model.add(Dense(32, input_dim=self.state_size, activation='relu',
+        model.add(Dense(16, input_dim=self.state_size, activation='relu',
                         kernel_initializer='he_uniform'))
         model.add(Dense(16, activation='relu',
                         kernel_initializer='he_uniform'))      
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         next_state, reward, done, info = env.step(action)
         next_state = np.reshape(next_state, [1, state_size])
         # if an action make the episode end, then gives penalty of -100
-        reward = reward if not done or score == 499 else -100
+        reward = reward
 
         # save the sample <s, a, r, s'> to the replay memory
         agent.append_sample(state, action, reward, next_state, done)
@@ -160,11 +160,15 @@ if __name__ == "__main__":
         state = next_state
 
         if done:
+        
+          #
+          
+          
           # every episode update the target model to be same with model
           agent.update_target_model()
           
           # every episode, plot the play time
-          score = score if score == 500 else score + 100
+          score = score# if score == 500 else score + 100
           scores.append(score)
           episodes.append(e)
           pylab.plot(episodes, scores, 'b')
@@ -173,7 +177,7 @@ if __name__ == "__main__":
                       len(agent.memory), "  epsilon:", agent.epsilon)
           # if the mean of scores of last 10 episode is bigger than 490
           # stop training
-          if np.mean(scores[-min(10, len(scores)):]) > 700:
+          if np.mean(scores[-min(10, len(scores)):]) > 3000:
             sys.exit()
 
       # save the model

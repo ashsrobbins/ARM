@@ -26,21 +26,18 @@ class armEnv:
     self.lastZ = 0
     self.z = 0
     self.velocityAverage = 0
-    self.lastDistanceToGoal = 0
-    self.distanceToGoal = 0
+    
+    
     
     #Currently there is 1 action, which is the bicep motor(up or down
-    self.action_space = 5
+    self.action_space = 7
     
     
-    #Values for the pitch of the arm
-    self.zmax = 70
-    self.zmin = 5
-    self.z = 0
+    
     
     self.discrete = True
     
-    self.resetPoint = 35
+    self.resetPoint = 25
     self.maxSteps = 150
     
     self.goalState = 65
@@ -64,7 +61,6 @@ class armEnv:
     self.steps = 0
     #Todo: Add randomly generated goal states 
     #self.goalState = 45
-    self.goalState = random.randint(self.zmin + 5 , self.zmax - 5)
     
     while True:
     #Get observation
@@ -114,14 +110,14 @@ class armEnv:
     x = float(x)
     y = float(y)
     z = float(z)
-    self.z = z
+    
     #Compute moving average of velocity
     self.velocity = z - self.lastZ
-    self.velocityAverage += -self.velocityAverage/2 + self.velocity/2
-    self.lastDistanceToGoal = self.distanceToGoal
-    self.distanceToGoal = (z - self.goalState)
+    self.velocityAverage -= self.velocityAverage/2 + self.velocity/2
     
-    self.currentState = np.array([z, self.velocityAverage, self.distanceToGoal, self.goalState])
+    self.distanceToGoal = z - self.goalState
+    
+    self.currentState = np.array([z, self.velocityAverage, self.distanceToGoal])
     #print('Recieved Observation', self.currentState)
     self.lastZ = z
     return self.currentState
@@ -136,37 +132,28 @@ class armEnv:
     self.currentState = state
     
     #TODO:Preprocess later in here but probably getObservation
-    #reward = self.getReward()
-    reward = 0
+    reward = self.getReward()
     done = self.goalCheck() 
-    reward += (1.0/abs(self.distanceToGoal + .001))/4
-    if abs(self.currentState[0] - self.goalState) < .5: 
-      reward += 100
     if done:
-      reward += 2000
+      reward += 100
     done |= self.steps > self.maxSteps
-    
-    if not (self.z >self.zmin and self.z < self.zmax):
-      done = True
-      reward = -10
-      print('Out of bounds:(')
     info = ''
     
     self.steps += 1
     #print('Action chosen:', action)
     if self.steps % 25 == 0:
-      print('Steps so far:',self.steps, '\tPosition: %.2f'%self.currentState[0], '\tGoal:',self.goalState, '\tReward', reward)
+      print('Steps so far:',self.steps, '\tPosition:',self.currentState[0])
     return state, reward, done, info
   
   def getReward(self):
   #Takes in a state and gets the reward value
   #Currently only for linear rewards
-    return (self.lastDistanceToGoal - self.distanceToGoal)
+    return float(2.0/abs(self.currentState[0] - self.goalState + .01))
     
   def goalCheck(self):
     #Return true if within a certain bounds, or at the goal`
   
-    if abs(self.currentState[0] - self.goalState) > .4 or abs(self.velocityAverage) >.1:
+    if abs(self.currentState[0] - self.goalState) > .1 or abs(self.velocityAverage) >.1:
       return False
     else:
       return True
