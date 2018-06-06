@@ -18,8 +18,9 @@ class armEnv:
     
   def make(self):
     #Open Serial port for data transferring
-    print('Searching for Serial')
+    print('Searching for Serial...')
     self.ser = serial.Serial('COM4', 57600)
+    print('Serial Connected')
     
     #For the velocity observation
     self.velocity = 0
@@ -82,7 +83,7 @@ class armEnv:
         self.currentState = self.getObservation()
         
         #Returns NP array of list of actions
-        return (np.array([self.currentState]))
+        return (np.array(self.currentState))
         
         
         
@@ -103,6 +104,7 @@ class armEnv:
     #Gets IMU data over serial
     #Returns as tuple (X,Y,Z)
     raw = self.ser.readline()
+    
     raw = self.ser.readline()#don't know why but it worked so...
     raw = raw.strip()
     dev_id, x, y, z = raw.decode().split(',')
@@ -111,13 +113,15 @@ class armEnv:
     y = float(y)
     z = float(z)
     
+    
+    
     #Compute moving average of velocity
     self.velocity = z - self.lastZ
     self.velocityAverage -= self.velocityAverage/2 + self.velocity/2
     
     self.distanceToGoal = z - self.goalState
     
-    self.currentState = np.array([z, self.velocityAverage, self.distanceToGoal])
+    self.currentState = np.array([z, self.velocityAverage])
     #print('Recieved Observation', self.currentState)
     self.lastZ = z
     return self.currentState
@@ -143,7 +147,7 @@ class armEnv:
     #print('Action chosen:', action)
     if self.steps % 25 == 0:
       print('Steps so far:',self.steps, '\tPosition:',self.currentState[0])
-    return state, reward, done, info
+    return np.array(state), reward, done, info
   
   def getReward(self):
   #Takes in a state and gets the reward value
